@@ -184,7 +184,7 @@ Vector3 Matrix44::RotateVector(const Vector3& v)
 	temp.m[12] = 0.0;
 	temp.m[13] = 0.0;
 	temp.m[14] = 0.0;
-	return temp * v;
+	return v * temp;
 }
 
 void Matrix44::TranslateLocal(float x, float y, float z)
@@ -339,7 +339,7 @@ Vector3 operator / (const Vector3& a, const Vector3& b)
 	return Vector3(a.x / b.x, a.y / b.y, a.z / b.z);
 }
 
-Vector4 operator * (const Matrix44& matrix, const Vector4& v)
+Vector4 operator * (const Vector4& v, const Matrix44& matrix)
 {
 	float x = matrix.m[0] * v.x + matrix.m[4] * v.y + matrix.m[8] * v.z + matrix.m[12] * v.w;
 	float y = matrix.m[1] * v.x + matrix.m[5] * v.y + matrix.m[9] * v.z + matrix.m[13] * v.w;
@@ -357,7 +357,7 @@ Vector3 Matrix44::ProjectVector(Vector3 v)
 }
 
 //Multiplies a vector by a matrix and returns the new vector
-Vector3 operator * (const Matrix44& matrix, const Vector3& v) 
+Vector3 operator * (const Vector3& v, const Matrix44& matrix)
 {   
    float x = matrix.m[0] * v.x + matrix.m[4] * v.y + matrix.m[8] * v.z + matrix.m[12]; 
    float y = matrix.m[1] * v.x + matrix.m[5] * v.y + matrix.m[9] * v.z + matrix.m[13]; 

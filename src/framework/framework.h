@@ -85,7 +85,7 @@ public:
 
 	void set(float x, float y) { this->x = x; this->y = y; }
 
-	Vector2& normalize() { *this *= 1 / (float)length(); return *this; }
+	Vector2& normalize() { *this *= 1/(float)length(); return *this; }
 
 	float Distance(const Vector2& v);
 	void Random(float range);
@@ -165,7 +165,7 @@ class Matrix44
 {
 	public:
 
-		// This matrix works in 
+		// Memory row-major, math row-vectors. (p * M)
 		union { // Allows to access the same var using different ways
 			struct
 			{
@@ -222,14 +222,14 @@ class Matrix44
 
 // Operators, they are our friends
 // Matrix44 operator * ( const Matrix44& a, const Matrix44& b );
-Vector3 operator * (const Matrix44& matrix, const Vector3& v);
+Vector3 operator * (const Vector3& v, const Matrix44& matrix);
 Vector3 operator + (const Vector3& a, const Vector3& b);
 Vector3 operator - (const Vector3& a, const Vector3& b);
 Vector3 operator * (const Vector3& a, float v);
 Vector3 operator / (const Vector3& a, float v);
 Vector3 operator * (const Vector3& a, const Vector3& b);
 Vector3 operator / (const Vector3& a, const Vector3& b);
-Vector4 operator * (const Matrix44& matrix, const Vector4& v);
+Vector4 operator * (const Vector4& v, const Matrix44& matrix);
 
 class Vector3u
 {

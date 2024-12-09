@@ -21,7 +21,7 @@ Vector3 Camera::GetLocalVector(const Vector3& v)
 Vector3 Camera::ProjectVector(Vector3 pos, bool& negZ)
 {
 	Vector4 pos4 = Vector4(pos.x, pos.y, pos.z, 1.0);
-	Vector4 result = viewprojection_matrix * pos4;
+	Vector4 result = pos4 * viewprojection_matrix;
 	negZ = result.z < 0;
 	if (type == ORTHOGRAPHIC)
 		return result.GetVector3();
@@ -33,7 +33,7 @@ void Camera::Rotate(float angle, const Vector3& axis)
 {
 	Matrix44 R;
 	R.SetRotation(angle, axis);
-	Vector3 new_front = R * (center - eye);
+	Vector3 new_front = (center - eye) * R;
 	center = eye + new_front;
 	UpdateViewMatrix();
 }
