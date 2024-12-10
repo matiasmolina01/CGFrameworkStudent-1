@@ -133,16 +133,21 @@ Matrix44::Matrix44()
 	SetIdentity();
 }
 
-void Matrix44::Set()
+Matrix44::Matrix44(const float* v)
 {
-//	glMatrixMode( GL_MODELVIEW );
-//	glMultMatrixf(m);
+	memcpy(m, v, sizeof(float) * 16);
 }
 
-void Matrix44::Load()
-{
-//	glMatrixMode( GL_MODELVIEW );
-//	glLoadMatrixf(m);
+void Matrix44::Set(
+	float r1c1, float r1c2, float r1c3, float r1c4,
+	float r2c1, float r2c2, float r2c3, float r2c4,
+	float r3c1, float r3c2, float r3c3, float r3c4,
+	float r4c1, float r4c2, float r4c3, float r4c4
+) {
+	m[0] = r1c1;	m[1] = r1c2;	m[2] = r1c3;	m[3] = r1c4;
+	m[4] = r2c1;	m[5] = r2c2;	m[6] = r2c3;	m[7] = r2c4;
+	m[8] = r3c1;	m[9] = r3c2;	m[10] = r3c3;	m[11] = r3c4;
+	m[12] = r4c1;	m[13] = r4c2;	m[14] = r4c3;	m[15] = r4c4;
 }
 
 void Matrix44::Clear()
@@ -213,7 +218,6 @@ void Matrix44::SetTranslation(float x, float y, float z)
 //To create a rotation matrix
 void Matrix44::SetRotation( float angle_in_rad, const Vector3& axis  )
 {
-	Clear();
 	Vector3 axis_n = axis;
 	axis_n.Normalize();
 
@@ -221,48 +225,81 @@ void Matrix44::SetRotation( float angle_in_rad, const Vector3& axis  )
 	float s = sin( angle_in_rad );
 	float t = 1 - c;
 
-	M[0][0] = t * axis.x * axis.x + c;
-	M[0][1] = t * axis.x * axis.y - s * axis.z;
-	M[0][2] = t * axis.x * axis.z + s * axis.y;
+	// first row
+	m[0] = t * axis.x * axis.x + c;
+	m[1] = t * axis.x * axis.y + s * axis.z;
+	m[2] = t * axis.x * axis.z - s * axis.y;
+	m[3] = 0;
 
-	M[1][0] = t * axis.x * axis.y + s * axis.z;
-	M[1][1] = t * axis.y * axis.y + c;
-	M[1][2] = t * axis.y * axis.z - s * axis.x;
+	// second row
+	m[4] = t * axis.x * axis.y - s * axis.z;
+	m[5] = t * axis.y * axis.y + c;
+	m[6] = t * axis.y * axis.z + s * axis.x;
+	m[7] = 0;
 
-	M[2][0] = t * axis.x * axis.z - s * axis.y;
-	M[2][1] = t * axis.y * axis.z + s * axis.x;
-	M[2][2] = t * axis.z * axis.z + c;
+	// third row
+	m[8] = t * axis.x * axis.z + s * axis.y;
+	m[9] = t * axis.y * axis.z - s * axis.x;
+	m[10] = t * axis.z * axis.z + c;
+	m[11] = 0;
 
-	M[3][3] = 1.0f;
+	m[12] = 0;
+	m[13] = 0;
+	m[14] = 0;
+	m[15] = 1;
 }
 
 Matrix44 Matrix44::GetRotationOnly()
 {
-	Matrix44 trans = *this;
-	trans.Transpose();
-	trans.Inverse();
-	return trans;
+	Vector3 v;
+	Matrix44 result; // constructor already sets identity
+
+	// right
+	v.Set(m[0], m[1], m[2]);
+	v = v.Normalize();
+	result.m[0] = v.x;
+	result.m[1] = v.y;
+	result.m[2] = v.z;
+
+	// up
+	v.Set(m[4], m[5], m[6]);
+	v = v.Normalize();
+	result.m[4] = v.x;
+	result.m[5] = v.y;
+	result.m[6] = v.z;
+
+	// front
+	v.Set(m[8], m[9], m[10]);
+	v = v.Normalize();
+	result.m[8] = v.x;
+	result.m[9] = v.y;
+	result.m[10] = v.z;
+
+	return result;
 }
 
 bool Matrix44::GetXYZ(float* euler) const
 {
-	// Code adapted from www.geometrictools.com
+	// see https://en.wikipedia.org/wiki/Euler_angles Tait-Bryan -> angles table -> XYZ row
+
+	// Code adapted from www.geometrictools.com  (math column major)
 	//	Matrix3<Real>::EulerResult Matrix3<Real>::ToEulerAnglesXYZ 
-    // +-           -+   +-                                        -+
-    // | r00 r01 r02 |   |  cy*cz           -cy*sz            sy    |
-    // | r10 r11 r12 | = |  cz*sx*sy+cx*sz   cx*cz-sx*sy*sz  -cy*sx |
-    // | r20 r21 r22 |   | -cx*cz*sy+sx*sz   cz*sx+cx*sy*sz   cx*cy |
-    // +-           -+   +-                                        -+
-    if (_13 < 1.0f)
+	// +-           -+   +-                                        -+
+	// | r00 r01 r02 |   |  cy*cz           -cy*sz            sy    |
+	// | r10 r11 r12 | = |  cz*sx*sy+cx*sz   cx*cz-sx*sy*sz  -cy*sx |
+	// | r20 r21 r22 |   | -cx*cz*sy+sx*sz   cz*sx+cx*sy*sz   cx*cy |
+	// +-           -+   +-                                        -+
+
+    if (_31 < 1.0f)
     {
-        if (_13 > - 1.0f)
+        if (_31 > - 1.0f)
         {
             // y_angle = asin(r02)
             // x_angle = atan2(-r12,r22)
             // z_angle = atan2(-r01,r00)
-            euler[1] = asinf(_13);
-            euler[0] = atan2f(-_23,_33);
-            euler[2] = atan2f(-_12,_11);
+            euler[1] = asinf(_31);
+            euler[0] = atan2f(-_32,_33);
+            euler[2] = atan2f(-_21,_11);
             return true;
         }
         else
@@ -271,7 +308,7 @@ bool Matrix44::GetXYZ(float* euler) const
             // z_angle - x_angle = atan2(r10,r11)
             // WARNING.  The solution is not unique.  Choosing z_angle = 0.
             euler[1] = (float)-M_PI_2;
-            euler[0] = -atan2f(_21,_22);
+            euler[0] = -atan2f(_12,_22);
             euler[2] = 0.0f;
             return false;
         }
@@ -282,7 +319,7 @@ bool Matrix44::GetXYZ(float* euler) const
         // z_angle + x_angle = atan2(r10,r11)
         // WARNING.  The solutions is not unique.  Choosing z_angle = 0.
         euler[1] = (float)M_PI_2;
-        euler[0] = atan2f(_21,_22);
+        euler[0] = atan2f(_12,_22);
         euler[2] = 0.0f;
     }
 	return false;
@@ -346,14 +383,6 @@ Vector4 operator * (const Vector4& v, const Matrix44& matrix)
 	float z = matrix.m[2] * v.x + matrix.m[6] * v.y + matrix.m[10] * v.z + matrix.m[14] * v.w;
 	float w = matrix.m[3] * v.x + matrix.m[7] * v.y + matrix.m[11] * v.z + matrix.m[15] * v.w;
 	return Vector4(x, y, z, w);
-}
-
-Vector3 Matrix44::ProjectVector(Vector3 v)
-{
-   float x = m[0] * v.x + m[4] * v.y + m[8] * v.z + m[12]; 
-   float y = m[1] * v.x + m[5] * v.y + m[9] * v.z + m[13]; 
-   float z = m[2] * v.x + m[6] * v.y + m[10] * v.z + m[14];
-   return Vector3(x/z, y/z, z);
 }
 
 //Multiplies a vector by a matrix and returns the new vector

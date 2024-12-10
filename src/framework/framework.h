@@ -181,8 +181,12 @@ class Matrix44
 		Matrix44();
 		Matrix44(const float* v);
 
-		void Set(); // Multiply with opengl matrix
-		void Load(); // Load in opengl matrix
+		void Set(
+			float r1c1, float r1c2, float r1c3, float r1c4,
+			float r2c1, float r2c2, float r2c3, float r2c4,
+			float r3c1, float r3c2, float r3c3, float r3c4,
+			float r4c1, float r4c2, float r4c3, float r4c4
+		);
 		void Clear();
 		void SetIdentity();
 		void Transpose();
@@ -196,25 +200,25 @@ class Matrix44
 		void SetUpAndOrthonormalize(Vector3 up);
 		void SetFrontAndOrthonormalize(Vector3 front);
 
-		Matrix44 GetRotationOnly(); //used when having scale
+		// does not accept negative scale
+		Matrix44 GetRotationOnly();
 
-		// Rotate only
-		Vector3 RotateVector( const Vector3& v);
-
-		Vector3 ProjectVector(Vector3 v);
+		// Rotate (and Scale) only
+		Vector3 RotateVector(const Vector3& v);
 
 		// Transform using world coordinates
 		void Translate(float x, float y, float z);
-		void Rotate( float angle_in_rad, const Vector3& axis  );
+		void Rotate(float angle_in_rad, const Vector3& axis);
 
 		// Transform using local coordinates
 		void TranslateLocal(float x, float y, float z);
-		void RotateLocal( float angle_in_rad, const Vector3& axis  );
+		void RotateLocal(float angle_in_rad, const Vector3& axis);
 
 		// Create a transformation matrix from scratch
 		void SetTranslation(float x, float y, float z);
-		void SetRotation( float angle_in_rad, const Vector3& axis );
+		void SetRotation(float angle_in_rad, const Vector3& axis);
 
+		// returns Euler angles [ X,Y,Z ] from PURE ROTATION MATRIX (unscaled). To reconstruct the matrix M = ZYX (math row-vector p*M)
 		bool GetXYZ(float* euler) const;
 
 		Matrix44 operator * (const Matrix44& matrix) const;
