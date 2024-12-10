@@ -169,10 +169,10 @@ class Matrix44
 		union { // Allows to access the same var using different ways
 			struct
 			{
-				float        _11, _12, _13, _14;
-				float        _21, _22, _23, _24;
-				float        _31, _32, _33, _34;
-				float        _41, _42, _43, _44;
+				float        _11, _12, _13, _14;	// row 1 (top)
+				float        _21, _22, _23, _24;	// row 2
+				float        _31, _32, _33, _34;	// row 3
+				float        _41, _42, _43, _44;	// row 4 (bot)
 			};
 			float M[4][4]; // [row][column]
 			float m[16];

@@ -152,10 +152,10 @@ void Matrix44::Clear()
 
 void Matrix44::SetIdentity()
 {
-	m[0]=1; m[4]=0; m[8]=0; m[12]=0;
-	m[1]=0; m[5]=1; m[9]=0; m[13]=0;
-	m[2]=0; m[6]=0; m[10]=1; m[14]=0;
-	m[3]=0; m[7]=0; m[11]=0; m[15]=1;
+	m[0] = 1;  m[1] = 0;  m[2] = 0;  m[3] = 0;
+	m[4] = 0;  m[5] = 1;  m[6] = 0;  m[7] = 0;
+	m[8] = 0;  m[9] = 0;  m[10] = 1; m[11] = 0;
+	m[12] = 0; m[13] = 0; m[14] = 0; m[15] = 1;
 }
 
 void Matrix44::Transpose()
@@ -369,77 +369,81 @@ void Matrix44::SetUpAndOrthonormalize(Vector3 up)
 {
 	up.Normalize();
 
-	//put the up vector in the matrix
-	m[4] = up.x;
-	m[5] = up.y;
-	m[6] = up.z;
-
 	//orthonormalize
-	Vector3 right,front;
-	right = RightVector();
+	Vector3 right, front;
+	right = RightVector().Normalize();
 
-	if ( abs(right.Dot( up )) < 0.99998 )
+	if (abs(right.Dot(up)) < 0.99998)
 	{
-		right = up.Cross( FrontVector() );
-		front = right.Cross( up );
+		front = right.Cross(up);
+		right = up.Cross(front);
 	}
 	else
 	{
-		front = Vector3(right).Cross( up );
-		right = up.Cross( front );
+		right = up.Cross(FrontVector());
+		front = right.Cross(up);
 	}
 
 	right.Normalize();
 	front.Normalize();
 
-	m[8] = front.x;
-	m[9] = front.y;
-	m[10] = front.z;
-
 	m[0] = right.x;
 	m[1] = right.y;
 	m[2] = right.z;
+
+	m[4] = up.x;
+	m[5] = up.y;
+	m[6] = up.z;
+
+	m[8] = front.x;
+	m[9] = front.y;
+	m[10] = front.z;
 }
 
 void Matrix44::SetFrontAndOrthonormalize(Vector3 front)
 {
 	front.Normalize();
 
-	//put the up vector in the matrix
-	m[8] = front.x;
-	m[9] = front.y;
-	m[10] = front.z;
-
 	//orthonormalize
-	Vector3 right,up;
-	right = RightVector();
+	Vector3 right, up;
+	right = RightVector().Normalize();
 
-	if ( abs(right.Dot( front )) < 0.99998 )
+	if (abs(right.Dot(front)) < 0.99998)
 	{
-		right = TopVector().Cross( front  );
-		up = front.Cross( right );
+		up = front.Cross(right);
+		right = up.Cross(front);
 	}
 	else
 	{
-		up = front.Cross( right );
-		right = up.Cross( front );
+		right = TopVector().Cross(front);
+		up = front.Cross(right);
 	}
 
 	right.Normalize();
 	up.Normalize();
 
+	m[0] = right.x;
+	m[1] = right.y;
+	m[2] = right.z;
+
 	m[4] = up.x;
 	m[5] = up.y;
 	m[6] = up.z;
 
-	m[0] = right.x;
-	m[1] = right.y;
-	m[2] = right.z;
+	m[8] = front.x;
+	m[9] = front.y;
+	m[10] = front.z;
 	
 }
 
 bool Matrix44::Inverse()
 {
+	// Guassian elimination
+	// this code is meant for MemoryRowMajor
+	// this works for both ( MemoryRowMajor ) and ( MemoryColMajor ) systems
+	//							inv(A)			trans(inv(trans(A)) = inv(A)
+	// note: inv(trans(A)) = trans(inv(A))
+
    unsigned int i, j, k, swap;
    float t;
    Matrix44 temp, final;
@@ -474,9 +478,7 @@ bool Matrix44::Inverse()
       // No non-zero pivot.  The CMatrix is singular, which shouldn't
       // happen.  This means the user gave us a bad CMatrix.
 
-
 #define MATRIX_SINGULAR_THRESHOLD 0.00001 //change this if you experience problems with matrices
-
       if ( fabsf(temp.M[i][i]) <= MATRIX_SINGULAR_THRESHOLD)
 	  {
 		  final.SetIdentity();
