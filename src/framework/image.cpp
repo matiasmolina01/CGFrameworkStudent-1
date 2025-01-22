@@ -309,19 +309,92 @@ bool Image::SaveTGA(const char* filename)
 	return true;
 }
 
-void Image::DrawRect(int x, int y, int w, int h, const Color& c)
+void Image::DrawRect(int x, int y, int w, int h, const Color& borderColor, int borderWidth, bool isFilled, const Color& fillColor)
 {
+	//Aseguramos que los parámetros son correctos
+	if (borderWidth <= 0) return;
 
-	for (int i = 0; i < w; ++i) {
-		SetPixelUnsafe(x + i, y, c);
-		SetPixelUnsafe(x + i, y + h - 1, c);
+	if (w <= 0 || h <= 0) return;
+	//Dibuja el relleno del rectángulo
+	if (isFilled) {
+		for (int i = y; i < y + h; ++i) {
+			for (int j = x; j < x + w; ++j) {
+				SetPixel(j, i, fillColor);
+			}
+		}
 	}
 
-	for (int j = 0; j < h; ++j) {
-		SetPixelUnsafe(x, y + j, c);
-		SetPixelUnsafe(x + w - 1, y + j, c);
+	for (int bw = 0; bw < borderWidth; ++bw) {
+		//border arriba
+		for (int j = x - bw; j < x + w + bw;++j) {
+			SetPixel(j, y - bw, borderColor);
+		}
+
+		//borde abajo
+		for (int j = x - bw; j < x + w + bw; ++j) {
+			SetPixel(j, y + h + bw - 1, borderColor);
+
+		}
+		//borde izquierda
+		for (int i = y - bw; i < y + h + bw;++i) {
+			SetPixel(x - bw, i, borderColor);
+		}
+
+		//borde derecha
+		for (int i = y - bw; i < y + h + bw; i++) {
+			SetPixel(x + w + bw, i, borderColor);
+		}
 	}
 }
+
+void Image::DrawLineDDA(int x0, int y0, int x1, int y1, const Color& c)
+{ // Para dibujar una línea siguiendo el algoritmo DDA, debemos seguir los pasos...
+	// 1. Calulamos los diferenciales
+	int dx = x1 - x0;
+	int dy = y1 - y0;
+
+	// 2. Calculamos el diferencial más largo (es equivalente a los pixeles que debemos pintar)
+	int d = std::max(abs(dx), abs(dy));
+
+	// 3. Calculamos cuanto avanza en cada iteración por eje.
+	float vx = dx / (float)d;
+	float vy = dy / (float)d;
+
+	// (*) si d es 0, dibujamos un punto (para evitar la división en 0)
+	if (d == 0) {
+		SetPixel(x0, y0, c);
+		return;
+	}
+
+	// 4. Inicializamos coordenadas actuales (en la primera iteración es x0 e y0)
+	float x = x0;
+	float y = y0;
+
+	for (int i = 0;i <= d;++i) { // iteramos "d" veces
+		SetPixel(round(x), round(y), c);
+
+		// Increment x and y by v
+		x += vx;
+		y += vy;
+	}
+}
+
+
+
+void Image::DrawTriangle(const Vector2& p0, const Vector2& p1, const Vector2& p2, const Color& borderColor, bool isFilled, const Color& fillColor)
+{
+	// Dibujamos el Triangulo
+}
+
+
+void Image::DrawCircle(int x, int y, int r, const Color& borderColor, int borderWidth, bool isFilled, const Color& fillColor)
+{
+	
+	
+	
+	// Dibujamos el circulo
+}
+
 
 #ifndef IGNORE_LAMBDAS
 

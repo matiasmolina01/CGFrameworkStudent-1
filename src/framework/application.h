@@ -12,6 +12,17 @@ class Application
 {
 public:
 
+	/*        VARIABLES          */
+	int drawMode = 1; // Indica el modo (linea,rectangulo...)
+	int borderWidth = 3; // Indica el borde
+
+	Vector2 prev_mouse_pos; // Coordenadas previas del mouse
+	Color linea = Color::RED; // Color default de las líneas
+	Color borde = Color::BLUE; // Color default del grosos
+
+
+
+
 	// Window
 
 	SDL_Window* window = nullptr;
