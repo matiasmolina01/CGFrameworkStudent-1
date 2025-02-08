@@ -37,7 +37,7 @@ void Application::Init(void)
 
 	// Load and initialize entities (same as before)
 	Mesh* cube = new Mesh();
-	cube->LoadOBJ("res/meshes/cube.obj");
+	cube->LoadOBJ("res/meshes/cleo.obj");
 
 	Entity* e1 = new Entity(cube);
 	e1->model_matrix.translate(0, 0, -5);
