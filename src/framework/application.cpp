@@ -26,33 +26,31 @@ Application::~Application()
 void Application::Init(void)
 {
 	std::cout << "Initiating app..." << std::endl;
+
+	// Instanciamos camara.s
+	camara.fov = 45.0f;
+	camara.near_plane = 0.1f;
+	camara.far_plane = 100.0f;
+
+	showSingleEntity = true;  // Start in single entity mode
+	currentProperty = NONE;
+
+	// Load and initialize entities (same as before)
+	Mesh* cube = new Mesh();
+	cube->LoadOBJ("res/meshes/cube.obj");
+
+	Entity* e1 = new Entity(cube);
+	e1->model_matrix.translate(0, 0, -5);
+
+	entities.push_back(e1);
+
 }
 
 // Render one frame
 void Application::Render(void)
 {
-	/*          DIBUJAR 12 LINEAS            */
 
-	// Calculamos la posicion del centro
-	int x = framebuffer.width / 2.0;
-	int y = framebuffer.height / 2.0;
 
-	// Longitud/Color de las líneas
-	int r = 100;
-	Color linea = Color::RED;
-
-	// Guardamos las coordenadas que vamos a ir iterando
-	int vx = x;
-	int vy = y;
-
-	float angulo = M_PI / 6; // pi/6 equivale a 30 grados
-
-	for (int i = 0;i < 12;++i) {
-		vx = x + r * cos(i * angulo); // Equivale a la coordenada inicial más el desplazamiento por el coseno del angulo.
-		vy = y + r * sin(i * angulo);
-		framebuffer.DrawLineDDA(x, y, vx, vy, linea); // Dibujamos 
-
-	}
 
 	framebuffer.Render();
 }
@@ -71,44 +69,24 @@ void Application::OnKeyPressed( SDL_KeyboardEvent event )
 	case SDLK_ESCAPE: exit(0); break; // ESC key, kill the app
 	
 	case SDLK_1:
-		drawMode = 1;
+
 		break;
 	
 	case SDLK_2:
-		drawMode = 2;
+
 		break;
 	
-	case SDLK_3:
-		drawMode = 3;
-		break;
 	
-	case SDLK_4:
-		drawMode = 4;
-		break;
-	
-	case SDLK_5:
-		drawMode = 5;
-		break;
-	
-	case SDLK_6:
-		drawMode = 6;
-		break;
-	
-	case SDLK_f:
+	case SDLK_n:
 
 		break;
 	
 	case SDLK_PLUS:
-		++borderWidth;
+
 		break;
 	
 	case SDLK_MINUS:
-		if (borderWidth == 0) {
-			break;
-		}
-		else {
-			--borderWidth;
-		}
+
 		break;
 	}
 }
@@ -123,34 +101,7 @@ void Application::OnMouseButtonDown( SDL_MouseButtonEvent event )
 void Application::OnMouseButtonUp( SDL_MouseButtonEvent event )
 {
 	if (event.button == SDL_BUTTON_LEFT) {
-		// Guardamos las coordenadas anteriores
-		int x0 = prev_mouse_pos.x;
-		int y0 = prev_mouse_pos.y;
 
-		// Guardamos las coordenadas actuales:
-		int x1 = mouse_position.x;
-		int y1 = mouse_position.y;
-
-		// Según el modo dibujamos:
-		switch (drawMode) {
-			case 1: // if drawMode == 1:
-				framebuffer.DrawLineDDA(x0, y0, x1, y1, linea);
-				break;
-
-			case 2: // if drawMode == 2:
-				// Encontramos el centro según la dirección de donde la dibujamos, corresponde al minimo entre las coordenadas actuales y previas de los ejes.
-				int rect_x = std::min(x0,x1);
-				int rect_y = std::min(y0,y1);
-				
-				// Calculamos el punto final, haciendo la diferencia
-				int rect_w = abs(x1 - x0);
-				int rect_h = abs(y1 - y0);
-				framebuffer.DrawRect(rect_x, rect_y, rect_w, rect_h, borde, borderWidth, true, linea);
-				break;
-			
-			//case 3:  // if drawMode == 3:
-
-			//break;
 		}
 	}
 }
